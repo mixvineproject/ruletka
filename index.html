@@ -6,208 +6,158 @@
     <title>Рулетка</title>
     <style>
         body {
-            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background: linear-gradient(45deg, blue, orange);
+            background: linear-gradient(270deg, blue, orange);
             background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
+            animation: gradient 10s ease infinite;
         }
 
         @keyframes gradient {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        #wheel {
+        #roulette {
+            position: relative;
             width: 300px;
             height: 300px;
             border-radius: 50%;
-            border: 5px solid black;
-            position: relative;
+            border: 10px solid #fff;
             overflow: hidden;
-            transform: rotate(0deg); /* Initial rotation */
+            margin-bottom: 20px;
         }
 
-        .sector {
+        .slot {
+            position: absolute;
             width: 50%;
             height: 50%;
-            position: absolute;
-            left: 50%;
-            top: 0;
-            transform-origin: left top;
-            background-size: cover;
-            font-size: 1.2em; /* Increased font size */
-            color: white; /* Text color */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
+            background-color: transparent;
+            border: 1px solid black;
+            transform-origin: 100% 100%;
+            clip-path: polygon(100% 0, 0 100%, 100% 100%);
         }
 
-
-        #prizePopup {
+        #result {
             display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            z-index: 10;
             text-align: center;
+            position: relative;
         }
-        #prizePopup.epic {
+
+        .winner-epic {
             box-shadow: 0 0 20px purple;
         }
-        #prizePopup.mythical {
+
+        .winner-mythic {
             box-shadow: 0 0 20px red;
         }
-        #prizePopup.legendary {
+
+        .winner-legendary {
             box-shadow: 0 0 30px yellow;
         }
 
-        .spin-button {
-            margin-top: 20px;
+        button {
             padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
+            margin-top: 10px;
             cursor: pointer;
         }
 
-
+        footer {
+            position: absolute;
+            bottom: 10px;
+            text-align: center;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
 
-    <div id="wheel">
-       
-    </div>
+<div id="roulette"></div>
+<div id="result">
+    <h2 id="prize-name"></h2>
+    <p>Заскриньте и отправьте боту в Telegram.</p>
+    <a id="telegram-link" href="https://t.me/mixvinebot" target="_blank">
+        <button>Перейти к боту</button>
+    </a>
+</div>
+<button id="spin-button">Крутить рулетку</button>
+<p>Нажмите "Крутить рулетку", чтобы испытать удачу!</p>
+<p>Если вы столкнулись с проблемой, свяжитесь с ботом MixVine (<a href="https://t.me/mixvinebot" target="_blank">https://t.me/mixvinebot</a>)</p>
 
-    <div id="prizePopup">
-        <h2 id="prizeText"></h2>
-        <p>Заскриньте и отправьте боту в Telegram.</p>
-        <a href="https://t.me/mixvinebot" target="_blank" class="telegram-button"><button>Перейти к боту</button></a>
-    </div>
-
-
-    <button class="spin-button">Крутить рулетку</button>
-    <p>Нажмите "Крутить рулетку", чтобы испытать удачу!</p>
-    <p><a href="https://t.me/mixvinebot" target="_blank">Если вы столкнулись с проблемой, свяжитесь с ботом MixVine</a></p>
-    <p>© Project MixVine 2024</p>
-    <p>ver. web3.1Global</p>
-
-
+<footer>
+    © Project MixVine 2024 <br>
+    ver. web3.1Global
+</footer>
 
 <script>
-    const wheel = document.getElementById('wheel');
-    const prizePopup = document.getElementById('prizeText');
-    const popup = document.getElementById('prizePopup');
-    const spinButton = document.querySelector('.spin-button');
-
     const prizes = [
-        { text: "Слабый приз", chance: 50, color: "#4CAF50" },
-        { text: "Обычный приз", chance: 40, color: "#2196F3" },
-        { text: "Необычный приз", chance: 30, color: "#f44336" },
-        { text: "Редкий приз", chance: 25, color: "#ff9800" },
-        { text: "Эпический приз", chance: 20, color: "#9C27B0" },
-        { text: "Мифический приз", chance: 10, color: "#673AB7"},
-        { text: "Легендарный приз", chance: 5, color: "#FFD700" }
+        { name: "Слабый приз", weight: 50 },
+        { name: "Обычный приз", weight: 40 },
+        { name: "Необычный приз", weight: 30 },
+        { name: "Редкий приз", weight: 25 },
+        { name: "Эпический приз", weight: 20 },
+        { name: "Мифический приз", weight: 10 },
+        { name: "Легендарный приз", weight: 5 }
     ];
 
-    let currentRotation = 0;
-
-    function createWheelSectors() {
-        let totalChance = 0;
-        prizes.forEach(prize => totalChance += prize.chance);
-
-        let startAngle = 0;
-        prizes.forEach(prize => {
-            const sectorAngle = (prize.chance / totalChance) * 360;
-            const sector = document.createElement('div');
-            sector.classList.add('sector');
-            sector.style.backgroundColor = prize.color;
-            sector.style.transform = `rotate(${startAngle}deg) skewY(${-90 + sectorAngle}deg)`; 
-            sector.textContent = prize.text; // Add text to sector
-            wheel.appendChild(sector);
-            startAngle += sectorAngle;
-        });
+    function createSlots() {
+        const roulette = document.getElementById('roulette');
+        for (let i = 0; i < prizes.length; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'slot';
+            slot.style.transform = `rotate(${(i * (360 / prizes.length))}deg)`;
+            roulette.appendChild(slot);
+        }
     }
 
-    function spinWheel() {
-        let randomNumber = Math.random() * 100;
-        let accumulatedChance = 0;
-        let winningPrize;
-        spinButton.disabled = true;
+    function spinRoulette() {
+        const randomValue = Math.random() * 100;
+        let accumulatedWeight = 0;
+        let selectedPrize;
 
         for (const prize of prizes) {
-            accumulatedChance += prize.chance;
-            if (randomNumber < accumulatedChance) {
-                winningPrize = prize;
+            accumulatedWeight += prize.weight;
+            if (randomValue < accumulatedWeight) {
+                selectedPrize = prize;
                 break;
             }
         }
 
-        const winningAngle = prizes.reduce((acc, prize, index) => {
-            if (prize === winningPrize) {
-              return acc;
-            }
-            return acc + (prize.chance / 150) * 360;
-          }, 0);
-          
-        const extraSpin = 3 * 360; // Spin 3 times more
-        const finalAngle = -(currentRotation + winningAngle + extraSpin + (360 - winningAngle) % 360) ; 
-        currentRotation = finalAngle % 360;
-
-
-        wheel.style.transition = 'transform 3s ease-out';
-        wheel.style.transform = `rotate(${finalAngle}deg)`;
-
-        setTimeout(() => {
-            popup.style.display = 'block';
-            prizePopup.textContent = winningPrize.text;
-
-            popup.classList.remove("epic", "mythical", "legendary");
-            if (winningPrize.text === "Эпический приз") {
-                popup.classList.add("epic");
-            } else if (winningPrize.text === "Мифический приз") {
-                popup.classList.add("mythical");
-            } else if (winningPrize.text === "Легендарный приз") {
-                popup.classList.add("legendary");
-                prizePopup.textContent = "Поздравляем! " + winningPrize.text;
-            }
-            spinButton.disabled = false; // Re-enable the button after the popup is shown
-        }, 3000);
-
-
-
+        return selectedPrize;
     }
 
-    createWheelSectors();
+    function showResult(prize) {
+        const resultDiv = document.getElementById('result');
+        const prizeName = document.getElementById('prize-name');
+        prizeName.textContent = prize.name;
 
-    spinButton.addEventListener('click', spinWheel);
-    popup.addEventListener('click', function(event){
-    if (event.target === popup) {
-        popup.style.display = 'none';
-        wheel.style.transition = 'none'; // Remove transition to avoid jump
+        resultDiv.className = ''; // Reset class
+        if (prize.name === "Эпический приз") {
+            resultDiv.classList.add('winner-epic');
+        } else if (prize.name === "Мифический приз") {
+            resultDiv.classList.add('winner-mythic');
+        } else if (prize.name === "Легендарный приз") {
+            resultDiv.classList.add('winner-legendary');
+            prizeName.textContent += " - Поздравляем!";
+        }
+
+        resultDiv.style.display = 'block';
     }
-});
 
+    document.getElementById('spin-button').addEventListener('click', () => {
+        const selectedPrize = spinRoulette();
+        showResult(selectedPrize);
+    });
+
+    createSlots();
 </script>
 
 </body>
