@@ -60,6 +60,7 @@
             border-bottom: 0;
             border-top: 200px solid; /* Цвет */
             transform-origin: 50% 100%; /* Вращение от нижней точки */
+            clip: rect(0, 200px, 200px, 0); /* Обрезаем лишнее */
         }
 
         .rouletteSlot:nth-child(1) { border-top-color: #ecf0f1; transform: rotate(0deg); } /* Слабый */
@@ -322,7 +323,8 @@
             const prizeIndex = prizes.indexOf(prize);
             const slotAngle = 360 / prizes.length;
             const halfSlotAngle = slotAngle / 2;
-            return 360 - (prizeIndex * slotAngle + halfSlotAngle);
+             return  (prizeIndex * slotAngle );
+          //  return 360 - (prizeIndex * slotAngle + halfSlotAngle);
         }
 
         // Функция отображения модального окна с результатом
