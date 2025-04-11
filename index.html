@@ -1,164 +1,184 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Рулетка</title>
     <style>
         body {
             margin: 0;
-            padding: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(270deg, blue, orange);
-            background-size: 400% 400%;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .gradient {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #1e90ff, #ff4500);
+            z-index: -1;
             animation: gradient 10s ease infinite;
         }
 
         @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
-        #roulette {
-            position: relative;
+        .roulette {
             width: 300px;
             height: 300px;
             border-radius: 50%;
-            border: 10px solid #fff;
-            overflow: hidden;
-            margin-bottom: 20px;
+            position: relative;
+            margin: 20px;
         }
 
         .slot {
             position: absolute;
-            width: 50%;
-            height: 50%;
-            background-color: transparent;
-            border: 1px solid black;
-            transform-origin: 100% 100%;
-            clip-path: polygon(100% 0, 0 100%, 100% 100%);
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transform-origin: 50% 150px;
         }
 
-        #result {
-            display: none;
+        .arrow {
+            width: 20px;
+            height: 40px;
+            background-color: white;
+            border-radius: 10px;
+            position: absolute;
+            top: 50px;
+            left: 140px;
+            transform: rotate(90deg);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .result-box {
+            background-color: rgba(255,255,255,0.9);
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            position: relative;
+            margin: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
         }
 
-        .winner-epic {
-            box-shadow: 0 0 20px purple;
+        .glow-purple {
+            animation: glow-purple 1s ease infinite;
         }
 
-        .winner-mythic {
-            box-shadow: 0 0 20px red;
+        .glow-red {
+            animation: glow-red 1s ease infinite;
         }
 
-        .winner-legendary {
-            box-shadow: 0 0 30px yellow;
+        .glow-yellow {
+            animation: glow-yellow 1s ease infinite;
         }
 
-        button {
-            padding: 10px 20px;
-            margin-top: 10px;
-            cursor: pointer;
+        @keyframes glow-purple {
+            0% { box-shadow: 0 0 10px #9c27b0; }
+            50% { box-shadow: 0 0 20px #9c27b0; }
+            100% { box-shadow: 0 0 10px #9c27b0; }
         }
 
-        footer {
-            position: absolute;
-            bottom: 10px;
-            text-align: center;
-            font-size: 12px;
+        @keyframes glow-red {
+            0% { box-shadow: 0 0 10px #ff0000; }
+            50% { box-shadow: 0 0 20px #ff0000; }
+            100% { box-shadow: 0 0 10px #ff0000; }
+        }
+
+        @keyframes glow-yellow {
+            0% { box-shadow: 0 0 20px #ffeb3b; }
+            50% { box-shadow: 0 0 40px #ffeb3b; }
+            100% { box-shadow: 0 0 20px #ffeb3b; }
         }
     </style>
 </head>
 <body>
+    <div class="gradient"></div>
+    
+    <div class="roulette" id="roulette">
+        <div class="arrow"></div>
+        <div class="slot" style="transform: rotate(108deg); background-color: #f0f0f0;">Слабый приз</div>
+        <div class="slot" style="transform: rotate(72deg); background-color: #e0e0e0;">Обычный приз</div>
+        <div class="slot" style="transform: rotate(54deg); background-color: #d0d0d0;">Необычный приз</div>
+        <div class="slot" style="transform: rotate(36deg); background-color: #c0c0c0;">Редкий приз</div>
+        <div class="slot" style="transform: rotate(28.8deg); background-color: #b0b0b0;">Эпический приз</div>
+        <div class="slot" style="transform: rotate(18deg); background-color: #a0a0a0;">Мифический приз</div>
+        <div class="slot" style="transform: rotate(9deg); background-color: #909090;">Легендарный приз</div>
+    </div>
 
-<div id="roulette"></div>
-<div id="result">
-    <h2 id="prize-name"></h2>
-    <p>Заскриньте и отправьте боту в Telegram.</p>
-    <a id="telegram-link" href="https://t.me/mixvinebot" target="_blank">
-        <button>Перейти к боту</button>
-    </a>
-</div>
-<button id="spin-button">Крутить рулетку</button>
-<p>Нажмите "Крутить рулетку", чтобы испытать удачу!</p>
-<p>Если вы столкнулись с проблемой, свяжитесь с ботом MixVine (<a href="https://t.me/mixvinebot" target="_blank">https://t.me/mixvinebot</a>)</p>
+    <div id="result" class="result-box"></div>
 
-<footer>
-    © Project MixVine 2024 <br>
-    ver. web3.1Global
-</footer>
+    <button onclick="spinRoulette()" style="padding: 10px 20px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+        Крутить рулетку
+    </button>
 
-<script>
-    const prizes = [
-        { name: "Слабый приз", weight: 50 },
-        { name: "Обычный приз", weight: 40 },
-        { name: "Необычный приз", weight: 30 },
-        { name: "Редкий приз", weight: 25 },
-        { name: "Эпический приз", weight: 20 },
-        { name: "Мифический приз", weight: 10 },
-        { name: "Легендарный приз", weight: 5 }
-    ];
+    <p style="color: white;">Если вы столкнулись с проблемой, свяжитесь с ботом MixVine <a href="https://t.me/mixvinebot" style="color: #4CAF50;">https://t.me/mixvinebot</a></p>
 
-    function createSlots() {
-        const roulette = document.getElementById('roulette');
-        for (let i = 0; i < prizes.length; i++) {
-            const slot = document.createElement('div');
-            slot.className = 'slot';
-            slot.style.transform = `rotate(${(i * (360 / prizes.length))}deg)`;
-            roulette.appendChild(slot);
+    <p style="color: white;">© Project MixVine 2024</p>
+    <p style="color: white;">ver. web3.1Global</p>
+
+    <script>
+        function spinRoulette() {
+            const roulette = document.getElementById('roulette');
+            const resultBox = document.getElementById('result');
+            
+            let degrees = 1440 + Math.random() * 360;
+            let finalDegree = 0;
+            
+            roulette.style.transform = `rotate(${degrees}deg)`;
+            
+            setInterval(() => {
+                degrees -= 10;
+                roulette.style.transform = `rotate(${degrees}deg)`;
+                
+                if (degrees <= finalDegree) {
+                    clearInterval();
+                    showResult();
+                }
+            }, 10);
         }
-    }
 
-    function spinRoulette() {
-        const randomValue = Math.random() * 100;
-        let accumulatedWeight = 0;
-        let selectedPrize;
+        function showResult() {
+            const resultBox = document.getElementById('result');
+            const prize = determinePrize();
+            
+            resultBox.innerHTML = `
+                <h3>Выпал ${prize}</h3>
+                <p>Заскриньте и отправьте боту в Telegram.</p>
+                <a href="https://t.me/mixvinebot" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">Перейти к боту</a>
+            `;
 
-        for (const prize of prizes) {
-            accumulatedWeight += prize.weight;
-            if (randomValue < accumulatedWeight) {
-                selectedPrize = prize;
-                break;
+            if (prize === 'Эпический приз') {
+                resultBox.classList.add('glow-purple');
+            } else if (prize === 'Мифический приз') {
+                resultBox.classList.add('glow-red');
+            } else if (prize === 'Легендарный приз') {
+                resultBox.classList.add('glow-yellow');
+                resultBox.innerHTML += '<p>Поздравляем! Вы выиграли легендарный приз!</p>';
             }
         }
 
-        return selectedPrize;
-    }
-
-    function showResult(prize) {
-        const resultDiv = document.getElementById('result');
-        const prizeName = document.getElementById('prize-name');
-        prizeName.textContent = prize.name;
-
-        resultDiv.className = ''; // Reset class
-        if (prize.name === "Эпический приз") {
-            resultDiv.classList.add('winner-epic');
-        } else if (prize.name === "Мифический приз") {
-            resultDiv.classList.add('winner-mythic');
-        } else if (prize.name === "Легендарный приз") {
-            resultDiv.classList.add('winner-legendary');
-            prizeName.textContent += " - Поздравляем!";
+        function determinePrize() {
+            const random = Math.random();
+            
+            if (random <= 0.3) return 'Слабый приз';
+            if (random <= 0.5) return 'Обычный приз';
+            if (random <= 0.65) return 'Необычный приз';
+            if (random <= 0.75) return 'Редкий приз';
+            if (random <= 0.83) return 'Эпический приз';
+            if (random <= 0.88) return 'Мифический приз';
+            return 'Легендарный приз';
         }
-
-        resultDiv.style.display = 'block';
-    }
-
-    document.getElementById('spin-button').addEventListener('click', () => {
-        const selectedPrize = spinRoulette();
-        showResult(selectedPrize);
-    });
-
-    createSlots();
-</script>
-
+    </script>
 </body>
 </html>
