@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MixVine Рулетка</title>
+    <style>
+        /* Анимированный фон */
+        @keyframes blueOrangeGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #3498db, #e67e22, #2980b9, #d35400); /* Синий / Оранжевый */
+            background-size: 400% 400%;
+            animation: blueOrangeGradient 15s ease infinite;
+            color: #f0f0f0;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative; /* Для футера */
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+        }
+
+        #rouletteContainer {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+        }
+
+        #rouletteWheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transition: transform 5s cubic-bezier(0.1, 0.6, 0.1, 1); /* Более плавная анимация */
+            position: relative;
+        }
+
+        .rouletteSlot {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 100px solid transparent; /* Создаем треугольник */
+            border-width: 100px;
+            border-bottom: 0;
+            border-top: 200px solid; /* Цвет */
+            transform-origin: 50% 100%; /* Вращение от нижней точки */
+        }
+
+        .rouletteSlot:nth-child(1) { border-top-color: #ecf0f1; transform: rotate(0deg); } /* Слабый */
+        .rouletteSlot:nth-child(2) { border-top-color: #95a5a6; transform: rotate(51.43deg); } /* Обычный */
+        .rouletteSlot:nth-child(3) { border-top-color: #3498db; transform: rotate(102.86deg); } /* Необычный */
+        .rouletteSlot:nth-child(4) { border-top-color: #2ecc71; transform: rotate(154.29deg); } /* Редкий */
+        .rouletteSlot:nth-child(5) { border-top-color: #9b59b6; transform: rotate(205.72deg); } /* Эпический */
+        .rouletteSlot:nth-child(6) { border-top-color: #e74c3c; transform: rotate(257.15deg); } /* Мифический */
+        .rouletteSlot:nth-child(7) { border-top-color: #f1c40f; transform: rotate(308.58deg); } /* Легендарный */
+
+        #rouletteArrow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            margin-top: -15px;
+            margin-left: -10px;
+            border-left: 20px solid #fff; /* Белая стрелка */
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            z-index: 1; /* Поверх рулетки */
+        }
+
+        #spinButton {
+            background-color: #27ae60;
+            color: #fff;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        #spinButton:hover {
+            background-color: #219653;
+        }
+
+        #spinButton:disabled {
+            background-color: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        #resultModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2;
+        }
+
+        #resultContent {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        /* Свечение */
+        #resultContent.epic-glow {
+            box-shadow: 0 0 20px 5px #8e44ad;
+        }
+
+        #resultContent.mythic-glow {
+            box-shadow: 0 0 20px 5px #e74c3c;
+        }
+
+        #resultContent.legendary-glow {
+             animation: legendaryGlow 1.5s ease-in-out infinite alternate;
+             border-width: 5px;
+        }
+        @keyframes legendaryGlow {
+            0% { box-shadow: 0 0 15px 5px rgba(255, 223, 0, 0.5); }
+            50% { box-shadow: 0 0 30px 10px rgba(255, 223, 0, 0.8); }
+            100% { box-shadow: 0 0 15px 5px rgba(255, 223, 0, 0.5); }
+        }
+
+        #resultModal h2 {
+            margin-top: 0;
+            font-size: 1.8em;
+        }
+
+        #resultModal p {
+            margin-bottom: 20px;
+            font-size: 1em;
+        }
+
+        #resultModal a {
+            background-color: #5865F2;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        #resultModal a:hover {
+            background-color: #4752C4;
+        }
+
+        #closeButton {
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5em;
+            color: #7f8c8d;
+        }
+
+        #cooldownTimer {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        #instructions {
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        #troubleLink {
+            font-size: 15px;
+        }
+
+        #troubleLink a {
+            color: #f1c40f;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px 0;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+        }
+
+        .footer-version {
+            display: block;
+            margin-top: 3px;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>MixVine Рулетка Удачи</h1>
+
+    <div id="rouletteContainer">
+        <div id="rouletteWheel">
+            <div class="rouletteSlot"></div>
+            <div class="rouletteSlot"></div>
+            <div class="rouletteSlot"></div>
+            <div class="rouletteSlot"></div>
+            <div class="rouletteSlot"></div>
+            <div class="rouletteSlot"></div>
+            <div class="rouletteSlot"></div>
+        </div>
+        <div id="rouletteArrow"></div>
+    </div>
+
+    <button id="spinButton" onclick="spinRoulette()">Крутить рулетку</button>
+    <div id="cooldownTimer"></div>
+
+    <p id="instructions">Нажмите "Крутить рулетку", чтобы испытать удачу!</p>
+    <p id="troubleLink">Если вы столкнулись с проблемой, свяжитесь с ботом MixVine <a href="https://t.me/mixvinebot" target="_blank">MixVine</a></p>
+
+    <!-- Модальное окно результата -->
+    <div id="resultModal">
+        <div id="resultContent">
+            <span id="closeButton" onclick="closeModal()">&times;</span>
+            <h2 id="prizeName"></h2>
+            <p>Заскриньте и отправьте боту в Telegram.</p>
+            <a href="https://t.me/mixvinebot" target="_blank">Перейти к боту</a>
+        </div>
+    </div>
+
+    <footer>
+        <span>© Project MixVine 2024</span>
+        <span class="footer-version">ver. web3.1Global</span>
+    </footer>
+
+    <script>
+        const spinButton = document.getElementById('spinButton');
+        const rouletteWheel = document.getElementById('rouletteWheel');
+        const resultModal = document.getElementById('resultModal');
+        const resultContent = document.getElementById('resultContent');
+        const prizeName = document.getElementById('prizeName');
+        const cooldownTimer = document.getElementById('cooldownTimer');
+
+        const prizes = [
+            { name: 'Слабый приз', probability: 0.5, color: '#ecf0f1' },
+            { name: 'Обычный приз', probability: 0.4, color: '#95a5a6' },
+            { name: 'Необычный приз', probability: 0.3, color: '#3498db' },
+            { name: 'Редкий приз', probability: 0.25, color: '#2ecc71' },
+            { name: 'Эпический приз', probability: 0.2, color: '#9b59b6' },
+            { name: 'Мифический приз', probability: 0.1, color: '#e74c3c' },
+            { name: 'Легендарный приз! Поздравляем!', probability: 0.05, color: '#f1c40f' }
+        ];
+
+        let spinning = false;
+
+        // Функция для запуска рулетки
+        function spinRoulette() {
+            if (spinning) return;
+
+            spinning = true;
+            spinButton.disabled = true;
+            spinButton.textContent = 'Крутится...';
+
+            const prize = determinePrize();
+            const rotation = 360 * 10 + getRotationOffset(prize); // Крутим на 10 оборотов
+
+            rouletteWheel.style.transition = 'transform 5s cubic-bezier(0.1, 0.6, 0.1, 1)'; // Более плавная анимация
+            rouletteWheel.style.transform = `rotate(${rotation}deg)`;
+
+            setTimeout(() => {
+                spinning = false;
+                spinButton.textContent = 'Крутить рулетку';
+                spinButton.disabled = false; // Разблокируем кнопку
+                showResultModal(prize);
+
+            }, 5000);
+        }
+
+        // Функция определения выигрышного приза на основе вероятностей
+        function determinePrize() {
+            const randomNumber = Math.random();
+            let cumulativeProbability = 0;
+
+            for (const prize of prizes) {
+                cumulativeProbability += prize.probability;
+                if (randomNumber <= cumulativeProbability) {
+                    return prize;
+                }
+            }
+            return prizes[0]; // На всякий случай
+        }
+
+        // Функция для получения смещения вращения для выигрышного приза
+        function getRotationOffset(prize) {
+            const prizeIndex = prizes.indexOf(prize);
+            const slotAngle = 360 / prizes.length;
+            const halfSlotAngle = slotAngle / 2;
+            return 360 - (prizeIndex * slotAngle + halfSlotAngle);
+        }
+
+        // Функция отображения модального окна с результатом
+        function showResultModal(prize) {
+            prizeName.textContent = prize.name;
+            resultContent.className = ''; // Сбросить все классы
+            resultContent.classList.add('glow');
+            if (prize.name.includes('Эпический')) {
+                resultContent.classList.add('epic-glow');
+            } else if (prize.name.includes('Мифический')) {
+                resultContent.classList.add('mythic-glow');
+            } else if (prize.name.includes('Легендарный')) {
+                resultContent.classList.add('legendary-glow');
+            }
+            resultModal.style.display = 'block';
+        }
+
+        // Функция закрытия модального окна
+        function closeModal() {
+            resultModal.style.display = 'none';
+        }
+
+    </script>
+
+</body>
+</html>
