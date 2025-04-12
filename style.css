@@ -1,0 +1,84 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 30px;
+}
+
+.wheel-container {
+    position: relative; /* Для позиционирования стрелки */
+    width: 300px;
+    height: 300px;
+}
+
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 4px solid #333;
+    overflow: hidden; /* Чтобы сегменты не вылезали за круг */
+    transition: transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Плавная анимация */
+    position: relative; /* Для позиционирования сегментов */
+}
+
+.segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: 100% 100%; /* Точка вращения - центр круга */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: white;
+    font-size: 1.2em;
+}
+
+.segment:nth-child(1) { background-color: #e74c3c; transform: rotate(0deg); }
+.segment:nth-child(2) { background-color: #3498db; transform: rotate(60deg); }
+.segment:nth-child(3) { background-color: #2ecc71; transform: rotate(120deg); }
+.segment:nth-child(4) { background-color: #f39c12; transform: rotate(180deg); }
+.segment:nth-child(5) { background-color: #9b59b6; transform: rotate(240deg); }
+.segment:nth-child(6) { background-color: #1abc9c; transform: rotate(300deg); }
+
+.text {
+    position: absolute; /* Чтобы текст позиционировался внутри сегмента */
+    transform: rotate(-90deg); /* Поворот текста для читаемости */
+}
+
+.arrow {
+    position: absolute;
+    top: -10px; /* Поднимаем немного вверх */
+    left: 50%;
+    margin-left: -15px; /* Центрируем стрелку */
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 30px solid #333; /* Цвет стрелки */
+    z-index: 10; /* Стрелка поверх колеса */
+}
+
+#spin-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+
+#result {
+    margin-top: 20px;
+    font-size: 1.4em;
+    font-weight: bold;
+}
