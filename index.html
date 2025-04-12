@@ -1,139 +1,41 @@
 <!DOCTYPE html>
-<html lang="ru" dir="">
+<html lang="ru">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, user-scalable=0, initial-scale=1, viewport-fit=cover" />
-    <title>Колесо фортуны</title>
-    <script>DEFAULT_TITLE = "Колесо фортуны";</script>
-    <link rel="shortcut icon" href="//assets.piliapp.com/s3pxy/random/wheel/favicon.ico" />
-    <link rel="stylesheet" type="text/css" href="//assets.piliapp.com/v3/31wt5_3d9e0.css" crossorigin/>
-    <style>
-        .bi-home { background:url(//cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.6.1/icons/house-door-fill.svg); }
-        .bi-x { background:url(//cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.6.1/icons/x-circle-fill.svg); }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Колесо Фортуны</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <div id="piliapp" class="row">
-        <div class="col-12">
-            <div class="row">
-                <div id="header" class="col-12 text-center pt-3 pb-3" v-bind:class="[{'show-banner':show_banner}, fullscreen ? 'col-xl-8 offset-xl-2' : 'col-xl-6 offset-xl-3']">
-                    <h1 v-bind:style="{visibility:warning?'hidden':'visible'}">Колесо фортуны</h1>
-                    <div class="h1" id="banner" v-bind:style="{background:banner_bgcolor}" v-on:click="show_banner = false">
-                        <span v-html="banner_html">_</span>
-                        <button id="hide-result" v-bind:disabled="show_banner !== 'show'" v-show="show_banner == 'show'" v-on:click.stop="hideResult()" v-bind:title="hideThisResultTxt">S</button>
-                        <button id="close-banner" v-on:click="show_banner = false" ref="closeBtn">X</button>
-                    </div>
+    <div class="container">
+        <h1>Колесо Фортуны</h1>
+        <div class="wheel-container">
+            <div class="wheel">
+                <div class="segment" data-value="1">
+                    <span class="text">Приз 1</span>
+                </div>
+                <div class="segment" data-value="2">
+                    <span class="text">Приз 2</span>
+                </div>
+                <div class="segment" data-value="3">
+                    <span class="text">Приз 3</span>
+                </div>
+                <div class="segment" data-value="4">
+                    <span class="text">Приз 4</span>
+                </div>
+                <div class="segment" data-value="5">
+                    <span class="text">Приз 5</span>
+                </div>
+                <div class="segment" data-value="6">
+                    <span class="text">Приз 6</span>
                 </div>
             </div>
+            <div class="arrow"></div>
         </div>
+        <button id="spin-button">Крутить!</button>
+        <div id="result"></div>
+    </div>
 
-        <div class="col-12">
-            <div class="row">
-                <div class="col-12 col-xl-6 offset-xl-3" id="results">
-                    <div id="wheel-wrapper" v-bind:class="{warning:warning}">
-                        <div class="warning-text" v-show="warning === 'limit'" v-cloak>
-                            В списке слишком много элементов. Не может превышать 100 элементов.
-                        </div>
-                        <div class="warning-text" v-show="warning === 'empty'" v-cloak>
-                            Пожалуйста, войдите в список
-                            <div class="arrow-to-list d-none d-xl-block">→ → → </div>
-                            <div class="arrow-to-list d-block d-xl-none">↓ ↓ ↓</div>
-                        </div>
-                        <div class="warning-text" v-show="warning === 'reset'" v-cloak>
-                            Вы хотите сбросить настройки?
-                            <br>
-                            <input type="button" class="btn btn-danger btn-lg" value="Сбросить" v-on:click="reset(0)" />
-                        </div>
-                        <div v-show="!is_spinned && !warning" id="pls-click">
-                            нажмите, чтобы крутить
-                        </div>
-                        <span id="test-text"></span>
-                        <div id="wheel-bg" v-show="!warning" v-cloak></div>
-                        <canvas id="wheel" v-show="!warning"></canvas>
-                        <span id="wheel-center" v-show="!warning"></span>
-                        <span id="wheel-pin" v-show="!warning">▼</span>
-                    </div>
-
-                    <div class="d-block d-lg-none controls text-center mt-3">
-                        <div v-bind:style="{visibility:!warning?'visible':'hidden'}">
-                            <div>
-                                <input type="button" class="spin-btn btn btn-primary btn-lg"
-                                       value="Старт" v-bind:disabled="is_moving" ref="spinBtn" />
-                                <input type="button" class="reset-btn btn btn-danger btn-sm"
-                                       value="Сбросить" v-bind:disabled="is_moving || names_striked.length == 0"
-                                       title="показать все скрытые предметы"
-                                       v-on:click="reset(1)" ref="resetBtn" />
-                            </div>
-                            <div id="hide-result-wrapper" v-bind:style="{visibility:show_banner === 'show'?'visible':'hidden'}" class="mt-2">
-                                <button class="btn btn-outline-danger btn-sm" v-on:click="hideResult()" v-html="hideThisResult" v-cloak></button>
-                            </div>
-                        </div>
-                    </div>
-                </div><!-- /#results -->
-
-                <div class="col-12 mt-3 mt-xl-0 flex-column"
-                     v-bind:class="[(fullscreen ? 'd-none' : 'col-xl-3 d-flex'),(is_moving ? 'disabled' : '')]" id="sidebar">
-                    <div v-show="is_moving" id="names-disabled" class="names"></div>
-                    <textarea v-show="mode == 'edit'" id="names" class="names" placeholder="Пожалуйста, введите здесь имена людей и отделите их другой строкой."
-                              ref="names"
-                              v-bind:disabled="is_moving"
-                              v-model="names_raw" v-on:blur="editareaBlur($event)" xv-on:blur="mode='show'" ></textarea>
-                    <div v-show="mode == 'show'" id="names-show" class="names" v-on:click="edit()" v-cloak>
-                        <div v-for="(name, idx) in names_list" v-on:click.stop="editRow(idx)" v-bind:class="{'strike':isStriked(idx)}">{{ name }}</div>
-                    </div>
-                    <div v-show="mode == 'strike'" id="names-strike" class="names" v-cloak>
-                        <div v-for="(name, idx) in names_list">
-                            <div v-if="isGoodName(name)"><label><input type="checkbox"
-                                                                       v-on:click="strikeName(idx, $event)" v-bind:checked="isStriked(idx)" />
-                                <span>{{ name }}</span></label></div>
-                        </div>
-                    </div>
-                    <div id="edit-bar" v-bind:style="{visibility:is_moving?'hidden':'visible'}">
-                        <button v-show="mode === 'show'" id="edit-title"
-                                title="изменить заголовок"
-                                class="btn btn-outline-secondary btn-sm float-left"
-                                v-on:click="show_banner=false;editTitle();"
-                        >Заголовок</button>
-
-                        <button class="btn btn-outline-secondary btn-sm" v-show="mode === 'show'" v-on:click="edit()" ref="editBtn" v-bind:disabled="is_moving">Изменить</button>
-                        <button class="btn btn-outline-secondary btn-sm float-right" v-cloak v-show="mode === 'edit'" v-on:click="mode='show'">Закончить</button>
-
-                        <button class="btn btn-outline-secondary btn-sm float-right" v-cloak v-show="showDefault" v-on:click="restoreDefault()" ref="defaultBtn">Стандартный</button>
-
-                        <button class="btn btn-outline-secondary btn-sm float-right" v-cloak v-show="mode === 'strike'" v-on:click="mode = 'show'">Закончить</button>
-                        <button class="btn btn-outline-secondary btn-sm float-right" v-show="mode === 'show'"  v-on:click="mode = 'strike'"
-                                title="редактировать скрытые элементы в списке"
-                        >скрывать...</button>
-                        <button class="btn btn-outline-secondary btn-sm float-right" id="strike-reset" v-cloak v-show="names_striked.length > 0 && mode !=='edit'"
-                                v-on:click="reset(0)"
-                                title="показать все скрытые предметы">Сбросить</button>
-                    </div>
-                </div><!-- /#sidebar -->
-            </div>
-        </div>
-    </div><!-- #piliapp -->
-</div> <!-- /.container -->
-
-<script>
-    var SOUNDS = { tick: ['//cdnjs.cloudflare.com/ajax/libs/blockly/1.0.0/media/disconnect.mp3', 1], bell:['//cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/sounds/bell_ring.mp3', 0.15]};
-    var I18N = {
-        new_title: "Пожа\u043bуйста, вв\u0435дите нов\u043eе н\u0430звание.",
-        one_hidden: "{1} был скрыт",
-        hide_one: "скрыть {1}",
-        reset_confirm: "В\u044b ув\u0435рены, что хотит\u0435 вы\u043fо\u043bнить с\u0431рос?",
-        restore_confirm: "\u0412ы уве\u0440ены, ч\u0442о хоти\u0442е \u0432осста\u043dов\u0438ть станд\u0430р\u0442ны\u0435 элем\u0435нты?",
-    };
-    var GOHOWL = 1;
-    var PRESET = {
-        id:"",
-        options:[1,2,3,4,5,6,7,8,9,10,11,12]};
-    var RELATED_HTML = ''; // Удалите строку, связанную с related, если не нужно
-</script>
-
-<script src="//assets.piliapp.com/v3/2qp30_3vz6a.js" crossorigin></script>
-<script src="//assets.piliapp.com/v3/50c6w_7ih65.js" crossorigin></script>
-<script src="//assets.piliapp.com/v3/2bl43_9pa4l.js" crossorigin></script>
-
+    <script src="script.js"></script>
 </body>
 </html>
